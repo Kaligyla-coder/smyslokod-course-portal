@@ -25,19 +25,22 @@
   const completeIcon = document.getElementById('complete-icon');
   const completeText = document.getElementById('complete-text');
   const toast = document.getElementById('toast');
+  const accordionControls = document.getElementById('accordion-controls');
+  const btnExpandAll = document.getElementById('btn-expand-all');
+  const btnCollapseAll = document.getElementById('btn-collapse-all');
+
+  // Sidebar Controls
+  const menuToggleBtn = document.getElementById('menu-toggle-btn');
+  const sidebarCloseBtn = document.getElementById('sidebar-close-btn');
+  const sidebar = document.getElementById('sidebar');
+  const sidebarOverlay = document.getElementById('sidebar-overlay');
 
   // Search Modal Elements
   const searchModal = document.getElementById('search-modal');
   const searchTrigger = document.getElementById('search-trigger');
-  const mobileSearchBtn = document.getElementById('mobile-search-btn');
   const searchCloseBtn = document.getElementById('search-close-btn');
   const searchInput = document.getElementById('search-input');
   const searchResults = document.getElementById('search-results');
-
-  // Mobile Sidebar Elements
-  const menuToggle = document.getElementById('menu-toggle');
-  const sidebar = document.getElementById('sidebar');
-  const sidebarOverlay = document.getElementById('sidebar-overlay');
 
   // Progress Storage
   function getCompleted() {
@@ -101,7 +104,7 @@
         link.innerHTML = `
           <span class="nav-item-icon">${item.icon}</span>
           <span class="nav-item-title">${item.title}</span>
-          ${isDone ? '<span class="nav-check-indicator">✓</span>' : ''}
+          ${isDone ? '<span class="nav-check">✓</span>' : ''}
         `;
         link.addEventListener('click', (e) => {
           e.preventDefault();
@@ -120,35 +123,37 @@
     setTimeout(() => toast.classList.remove('show'), 2500);
   }
 
-  // Enhance Code and Prompts with Copy Buttons
-  function enhanceRenderedMarkdown(container) {
-    // Wrap code blocks
+  // Enhance Rendered Content with Copy Buttons
+  function enhanceRenderedContent(container) {
+    // Add copy button to <pre> blocks
     container.querySelectorAll('pre').forEach(pre => {
-      if (pre.querySelector('.btn-copy-prompt')) return;
+      if (pre.querySelector('.btn-copy-code-tag')) return;
       const btn = document.createElement('button');
-      btn.className = 'btn-copy-prompt';
+      btn.className = 'btn-copy-prompt-action btn-copy-code-tag';
       btn.style.position = 'absolute';
       btn.style.top = '8px';
       btn.style.right = '8px';
       btn.innerHTML = '📋 Копировать';
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
         const code = pre.querySelector('code')?.innerText || pre.innerText;
         navigator.clipboard.writeText(code).then(() => showToast('Код скопирован!'));
       });
       pre.appendChild(btn);
     });
 
-    // Detect prompt blocks
-    container.querySelectorAll('p, blockquote').forEach(el => {
-      const text = el.innerText;
-      if (text.includes('Промпт для агента') || text.includes('МОЯ ИДЕЯ:') || text.includes('Склонируй репозиторий')) {
-        el.classList.add('prompt-card');
+    // Enhance prompt copy buttons (if already present in HTML)
+    container.querySelectorAll('button').forEach(btn => {
+      const text = btn.innerText;
+      if (text.includes('Копировать') || text.includes('Копировать промпт')) {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const parent = btn.closest('div[class*="bg-accent"]') || btn.closest('.prompt-box-styled') || btn.parentElement;
+          const promptText = parent ? (parent.querySelector('div[class*="whitespace-pre"]') || parent).innerText : '';
+          const cleanPrompt = promptText.replace(/Промпт для агента|Копировать промпт|ещё \d+ таких промптов/g, '').trim();
+          navigator.clipboard.writeText(cleanPrompt || parent.innerText).then(() => showToast('Промпт скопирован!'));
+        });
       }
-    });
-
-    // Syntax highlighting
-    container.querySelectorAll('pre code').forEach((block) => {
-      if (window.hljs) hljs.highlightElement(block);
     });
   }
 
@@ -166,29 +171,29 @@
     breadcrumbSection.innerText = lesson.section || 'Практикум';
     breadcrumbLesson.innerText = lesson.title;
 
-    // Render Content Tab
-    if (window.marked) {
-      contentBody.innerHTML = marked.parse(lesson.content || '*Материалы загружаются...*');
-    } else {
-      contentBody.innerText = lesson.content;
-    }
-    enhanceRenderedMarkdown(contentBody);
+    // Set HTML Content
+    contentBody.innerHTML = lesson.html || '<p>Материалы загружаются...</p>';
+    enhanceRenderedContent(contentBody);
 
-    // Render Transcript Tab
-    if (lesson.transcript && lesson.transcript.trim().length > 0) {
+    // Check if page contains collapsible details / accordions
+    const detailsCount = contentBody.querySelectorAll('details').length;
+    if (detailsCount > 0) {
+      accordionControls.style.display = 'flex';
+    } else {
+      accordionControls.style.display = 'none';
+    }
+
+    // Transcript Tab
+    if (lesson.transcriptHtml && lesson.transcriptHtml.trim().length > 0) {
       tabTranscriptBtn.style.display = 'inline-flex';
-      if (window.marked) {
-        transcriptBody.innerHTML = marked.parse(lesson.transcript);
-      } else {
-        transcriptBody.innerText = lesson.transcript;
-      }
-      enhanceRenderedMarkdown(transcriptBody);
+      transcriptBody.innerHTML = lesson.transcriptHtml;
+      enhanceRenderedContent(transcriptBody);
     } else {
       tabTranscriptBtn.style.display = 'none';
       transcriptBody.innerHTML = '';
     }
 
-    // Presentation Link Tab
+    // Presentation Tab
     if (lesson.presentation) {
       tabPresentationBtn.style.display = 'inline-flex';
       tabPresentationBtn.href = lesson.presentation;
@@ -196,7 +201,7 @@
       tabPresentationBtn.style.display = 'none';
     }
 
-    // Switch to content tab
+    // Switch Tab
     switchTab('content');
 
     // Pagination
@@ -216,7 +221,8 @@
 
     renderNav();
     updateProgressUI();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    const scrollEl = document.querySelector('.content-scroll-container');
+    if (scrollEl) scrollEl.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   function switchTab(tabName) {
@@ -237,6 +243,14 @@
 
   tabs.forEach(t => {
     t.addEventListener('click', () => switchTab(t.dataset.tab));
+  });
+
+  // Accordion Expand/Collapse All
+  btnExpandAll.addEventListener('click', () => {
+    contentBody.querySelectorAll('details').forEach(d => d.open = true);
+  });
+  btnCollapseAll.addEventListener('click', () => {
+    contentBody.querySelectorAll('details').forEach(d => d.open = false);
   });
 
   // Completion toggle button
@@ -272,18 +286,18 @@
     const matches = [];
     data.forEach((item, idx) => {
       const inTitle = item.title.toLowerCase().includes(q);
-      const inContent = (item.content || '').toLowerCase().includes(q);
-      const inTranscript = (item.transcript || '').toLowerCase().includes(q);
+      const inContent = (item.html || '').toLowerCase().includes(q);
 
-      if (inTitle || inContent || inTranscript) {
-        let snippet = '';
+      if (inTitle || inContent) {
+        let snippet = item.section;
         if (inContent) {
-          const pos = item.content.toLowerCase().indexOf(q);
-          const start = Math.max(0, pos - 40);
-          const end = Math.min(item.content.length, pos + 90);
-          snippet = item.content.substring(start, end).replace(/\n/g, ' ');
-        } else if (inTitle) {
-          snippet = item.section;
+          const cleanTxt = item.html.replace(/<[^>]+>/g, ' ');
+          const pos = cleanTxt.toLowerCase().indexOf(q);
+          if (pos !== -1) {
+            const start = Math.max(0, pos - 40);
+            const end = Math.min(cleanTxt.length, pos + 80);
+            snippet = cleanTxt.substring(start, end).replace(/\s+/g, ' ');
+          }
         }
         matches.push({ item, idx, snippet });
       }
@@ -313,7 +327,6 @@
 
   searchInput.addEventListener('input', (e) => renderSearchResults(e.target.value));
   searchTrigger.addEventListener('click', openSearch);
-  mobileSearchBtn.addEventListener('click', openSearch);
   searchCloseBtn.addEventListener('click', closeSearch);
   searchModal.addEventListener('click', (e) => {
     if (e.target === searchModal) closeSearch();
@@ -329,7 +342,17 @@
     }
   });
 
-  // Mobile Drawer
+  // Sidebar Toggle (Mobile & Desktop)
+  function toggleSidebar() {
+    if (window.innerWidth <= 1024) {
+      const isOpen = sidebar.classList.contains('open');
+      if (isOpen) closeSidebar();
+      else openSidebar();
+    } else {
+      sidebar.classList.toggle('collapsed');
+    }
+  }
+
   function openSidebar() {
     sidebar.classList.add('open');
     sidebarOverlay.classList.add('open');
@@ -338,10 +361,15 @@
     sidebar.classList.remove('open');
     sidebarOverlay.classList.remove('open');
   }
-  menuToggle.addEventListener('click', openSidebar);
+
+  menuToggleBtn.addEventListener('click', toggleSidebar);
+  sidebarCloseBtn.addEventListener('click', () => {
+    if (window.innerWidth <= 1024) closeSidebar();
+    else sidebar.classList.add('collapsed');
+  });
   sidebarOverlay.addEventListener('click', closeSidebar);
 
-  // Initial Route based on URL hash
+  // Initial Route
   function init() {
     const hash = window.location.hash.replace('#', '');
     let initialIndex = 0;
