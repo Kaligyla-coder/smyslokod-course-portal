@@ -698,3 +698,50 @@ svg {
   .tabs-bar { margin: 0 -16px; padding: 0 16px; }
   .lesson-pagination { grid-template-columns: 1fr; }
 }
+/* Overview Module Cards Styling */
+.rich-content-body a.block {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin: 18px 0;
+  text-decoration: none;
+  display: block;
+  transition: all 0.2s ease;
+}
+.rich-content-body a.block:hover {
+  background: var(--bg-card-hover);
+  border-color: rgba(217, 119, 87, 0.4);
+  transform: translateY(-1px);
+}
+.rich-content-body a.block .text-lede {
+  color: var(--text-main);
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.rich-content-body a.block p {
+  color: var(--text-sub);
+  font-size: 14px;
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+.rich-content-body a.block .space-y-1\.5 a, .rich-content-body a.internal-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  color: var(--text-sub);
+  text-decoration: none;
+  font-size: 14px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  margin-bottom: 4px;
+  transition: all 0.15s;
+}
+.rich-content-body a.block .space-y-1\.5 a:hover, .rich-content-body a.internal-nav-link:hover {
+  background: var(--accent-soft);
+  color: var(--text-main);
+  border-color: var(--accent-soft-border);
+}
