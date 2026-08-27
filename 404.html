@@ -1,0 +1,35 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>СмыслоКод — Перенаправление...</title>
+  <script>
+    (function() {
+      var path = window.location.pathname;
+      var repo = '/smyslokod-course-portal';
+      var subPath = path.indexOf(repo) === 0 ? path.substring(repo.length) : path;
+      var map = {
+        '/dashboard/praktikum-august-2026/1/1': '#day1_intro',
+        '/dashboard/praktikum-august-2026/1/2': '#day1_guide',
+        '/dashboard/praktikum-august-2026/2/1': '#day2_intro',
+        '/dashboard/praktikum-august-2026/2/2': '#day2_guide',
+        '/dashboard/praktikum-august-2026/3/1': '#day3_intro',
+        '/dashboard/praktikum-august-2026/3/2': '#day3_guide',
+        '/dashboard/praktikum-august-2026/solutions': '#solutions_all',
+        '/dashboard/praktikum-august-2026/solutions/methodology': '#solutions_method',
+        '/dashboard/praktikum-august-2026/solutions/rules': '#solutions_rules',
+        '/dashboard/praktikum-august-2026/solutions/reels-autopost': '#solutions_reels',
+        '/dashboard/praktikum-august-2026/bonuses/avtorskie-promty-artemiya': '#prompts',
+        '/dashboard/praktikum-august-2026/transcription/d2da10ce-1085-466d-b765-234696365a92': '#transcription_d1',
+        '/dashboard/praktikum-august-2026/transcription/53ef37f4-b879-427d-aad5-760ebd16eb76': '#transcription_d2',
+        '/dashboard/praktikum-august-2026/transcription/2d3491c5-0c4c-4201-b3a6-be8b2152f4da': '#transcription_d3'
+      };
+      var target = map[subPath] || '#overview';
+      window.location.replace(repo + '/' + target);
+    })();
+  </script>
+</head>
+<body style="background:#141413; color:#ede9e3; font-family:sans-serif; display:flex; align-items:center; justify-content:center; height:100vh; margin:0;">
+  <p>Перенаправление к материалам практикума...</p>
+</body>
+</html>
