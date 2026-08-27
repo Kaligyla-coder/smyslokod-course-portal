@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ru" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>СмыслоКод — Практикум по вайбкодингу</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+</head>
+<body class="bg-dark text-slate-100 antialiased">
+  <div id="app" class="flex min-h-screen">
+    <!-- Mobile Header -->
+    <header class="mobile-header lg:hidden">
+      <button id="menu-toggle" class="btn-icon" aria-label="Меню">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <div class="flex items-center gap-2">
+        <span class="logo-icon">⚡</span>
+        <span class="font-bold tracking-tight">СмыслоКод</span>
+      </div>
+      <button id="mobile-search-btn" class="btn-icon" aria-label="Поиск">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      </button>
+    </header>
+
+    <!-- Sidebar Overlay -->
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar-header">
+        <div class="flex items-center gap-2.5">
+          <div class="logo-badge">⚡</div>
+          <div>
+            <div class="brand-title">СмыслоКод</div>
+            <div class="brand-subtitle">Практикум по вайбкодингу</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search Bar -->
+      <div class="px-4 py-3">
+        <button id="search-trigger" class="search-trigger">
+          <svg class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="11" cy="11" r="8" stroke-width="2"/><path d="m21 21-4.3-4.3" stroke-width="2"/></svg>
+          <span>Поиск по материалам...</span>
+          <kbd class="kbd-badge">Ctrl K</kbd>
+        </button>
+      </div>
+
+      <!-- Course Progress Summary -->
+      <div class="px-4 pb-3">
+        <div class="progress-box">
+          <div class="flex justify-between items-center text-xs mb-1.5 font-medium text-slate-300">
+            <span>Прогресс курса</span>
+            <span id="progress-percent">0%</span>
+          </div>
+          <div class="progress-bar-bg">
+            <div id="progress-bar-fill" class="progress-bar-fill" style="width: 0%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation Tree -->
+      <nav id="nav-tree" class="nav-tree custom-scrollbar"></nav>
+
+      <!-- Sidebar Footer -->
+      <div class="sidebar-footer">
+        <a href="https://github.com/Kaligyla-coder/smyslokod-course-portal" target="_blank" class="github-link">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+          <span>Репозиторий на GitHub</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-wrapper flex-1">
+      <!-- Sticky Top Bar -->
+      <div class="top-nav-bar">
+        <div class="flex items-center gap-2 text-xs text-slate-400">
+          <span id="breadcrumb-section">Курс</span>
+          <span>/</span>
+          <span id="breadcrumb-lesson" class="text-slate-200 font-medium truncate">...</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <button id="toggle-complete-btn" class="complete-badge-btn">
+            <span id="complete-icon">⚪</span>
+            <span id="complete-text">Отметить как пройденный</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Lesson Viewport -->
+      <article class="content-container">
+        <!-- Lesson Header Card -->
+        <header class="lesson-header-card">
+          <div class="flex items-center gap-2.5 mb-2">
+            <span id="lesson-icon" class="text-2xl">⚡</span>
+            <span id="lesson-section-badge" class="badge-tag">Модуль</span>
+          </div>
+          <h1 id="lesson-title" class="lesson-main-title">Загрузка урока...</h1>
+          
+          <!-- View Tabs (Материалы / Транскрипция / Презентация) -->
+          <div class="tabs-bar" id="tabs-bar">
+            <button class="tab-btn active" data-tab="content">📖 Материалы урока</button>
+            <button class="tab-btn" data-tab="transcript" id="tab-transcript-btn">🎙 Транскрипция эфира</button>
+            <a href="#" target="_blank" class="tab-btn external-tab" id="tab-presentation-btn" style="display: none;">📄 Скачать презентацию PDF ↗</a>
+          </div>
+        </header>
+
+        <!-- Markdown Body -->
+        <div id="content-body" class="markdown-body"></div>
+        <div id="transcript-body" class="markdown-body" style="display: none;"></div>
+
+        <!-- Next / Prev Lesson Navigation Footer -->
+        <footer class="lesson-pagination">
+          <button id="prev-lesson-btn" class="pagination-btn prev">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M19 12H5M12 19l-7-7 7-7" stroke-width="2"/></svg>
+            <div>
+              <div class="text-xs text-slate-400">Предыдущий урок</div>
+              <div class="pagination-title" id="prev-lesson-title">...</div>
+            </div>
+          </button>
+          <button id="next-lesson-btn" class="pagination-btn next">
+            <div class="text-right">
+              <div class="text-xs text-slate-400">Следующий урок</div>
+              <div class="pagination-title" id="next-lesson-title">...</div>
+            </div>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M5 12h14M12 5l7 7-7 7" stroke-width="2"/></svg>
+          </button>
+        </footer>
+      </article>
+    </main>
+  </div>
+
+  <!-- Search Modal -->
+  <div id="search-modal" class="search-modal-backdrop" style="display: none;">
+    <div class="search-modal-container">
+      <div class="search-modal-header">
+        <svg class="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="11" cy="11" r="8" stroke-width="2"/><path d="m21 21-4.3-4.3" stroke-width="2"/></svg>
+        <input type="text" id="search-input" placeholder="Поиск по темам, промптам, урокам и коду..." autofocus>
+        <button id="search-close-btn" class="text-slate-400 hover:text-white">Esc</button>
+      </div>
+      <div id="search-results" class="search-results-list custom-scrollbar"></div>
+    </div>
+  </div>
+
+  <!-- Toast Alert -->
+  <div id="toast" class="toast-notification">Промпт скопирован в буфер обмена!</div>
+
+  <script src="data/course_data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
