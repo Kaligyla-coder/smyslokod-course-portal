@@ -3,6 +3,29 @@
   let currentLessonIndex = 0;
   let activeTab = 'content';
 
+  const URL_MAP = {
+    '/dashboard/praktikum-august-2026': 'overview',
+    '/dashboard/praktikum-august-2026/': 'overview',
+    '/dashboard/praktikum-august-2026/1/1': 'day1_intro',
+    '/dashboard/praktikum-august-2026/1/2': 'day1_guide',
+    '/dashboard/praktikum-august-2026/2/1': 'day2_intro',
+    '/dashboard/praktikum-august-2026/2/2': 'day2_guide',
+    '/dashboard/praktikum-august-2026/3/1': 'day3_intro',
+    '/dashboard/praktikum-august-2026/3/2': 'day3_guide',
+    '/dashboard/praktikum-august-2026/solutions': 'solutions_all',
+    '/dashboard/praktikum-august-2026/solutions/': 'solutions_all',
+    '/dashboard/praktikum-august-2026/solutions/methodology': 'solutions_method',
+    '/dashboard/praktikum-august-2026/solutions/rules': 'solutions_rules',
+    '/dashboard/praktikum-august-2026/solutions/reels-autopost': 'solutions_reels',
+    '/dashboard/praktikum-august-2026/bonuses/avtorskie-promty-artemiya': 'prompts',
+    '/promty': 'prompts',
+    '/dashboard': 'overview',
+    '/dashboard/praktikum-august-2026/transcription/d2da10ce-1085-466d-b765-234696365a92': 'transcription_d1',
+    '/dashboard/praktikum-august-2026/transcription/53ef37f4-b879-427d-aad5-760ebd16eb76': 'transcription_d2',
+    '/dashboard/praktikum-august-2026/transcription/2d3491c5-0c4c-4201-b3a6-be8b2152f4da': 'transcription_d3',
+    '/': 'overview'
+  };
+
   // DOM Elements
   const navTree = document.getElementById('nav-tree');
   const lessonTitle = document.getElementById('lesson-title');
@@ -12,6 +35,7 @@
   const breadcrumbLesson = document.getElementById('breadcrumb-lesson');
   const contentBody = document.getElementById('content-body');
   const transcriptBody = document.getElementById('transcript-body');
+  const tabsBar = document.getElementById('tabs-bar');
   const tabTranscriptBtn = document.getElementById('tab-transcript-btn');
   const tabPresentationBtn = document.getElementById('tab-presentation-btn');
   const tabs = document.querySelectorAll('.tab-btn[data-tab]');
@@ -123,7 +147,7 @@
     setTimeout(() => toast.classList.remove('show'), 2500);
   }
 
-  // Enhance Rendered Content with Copy Buttons
+  // Enhance Rendered Content with Copy Buttons and Link Handlers
   function enhanceRenderedContent(container) {
     // Add copy button to <pre> blocks
     container.querySelectorAll('pre').forEach(pre => {
@@ -175,12 +199,14 @@
     contentBody.innerHTML = lesson.html || '<p>Материалы загружаются...</p>';
     enhanceRenderedContent(contentBody);
 
-    // Check if page contains collapsible details / accordions
-    const detailsCount = contentBody.querySelectorAll('details').length;
-    if (detailsCount > 0) {
-      accordionControls.style.display = 'flex';
-    } else {
+    // If overview page, simplify tabs
+    if (lesson.id === 'overview') {
+      tabsBar.style.display = 'none';
       accordionControls.style.display = 'none';
+    } else {
+      tabsBar.style.display = 'flex';
+      const detailsCount = contentBody.querySelectorAll('details').length;
+      accordionControls.style.display = detailsCount > 0 ? 'flex' : 'none';
     }
 
     // Transcript Tab
@@ -245,6 +271,43 @@
     t.addEventListener('click', () => switchTab(t.dataset.tab));
   });
 
+  // Global Document Link Interceptor (Guarantees NO 404s)
+  document.addEventListener('click', function(e) {
+    const link = e.target.closest('a');
+    if (!link) return;
+
+    const href = link.getAttribute('href');
+    if (!href) return;
+
+    // Check if it's an internal course hash link (#day1_intro)
+    if (href.startsWith('#')) {
+      const id = href.replace('#', '');
+      const idx = data.findIndex(d => d.id === id);
+      if (idx !== -1) {
+        e.preventDefault();
+        loadLesson(idx);
+        if (window.innerWidth <= 1024) closeSidebar();
+        return;
+      }
+    }
+
+    // Check if it's an internal smyslokod path (/dashboard/...)
+    let path = href;
+    if (path.startsWith('https://smyslokod.ru')) {
+      path = path.replace('https://smyslokod.ru', '');
+    }
+    if (URL_MAP[path]) {
+      e.preventDefault();
+      const targetId = URL_MAP[path];
+      const idx = data.findIndex(d => d.id === targetId);
+      if (idx !== -1) {
+        loadLesson(idx);
+        if (window.innerWidth <= 1024) closeSidebar();
+        return;
+      }
+    }
+  });
+
   // Accordion Expand/Collapse All
   btnExpandAll.addEventListener('click', () => {
     contentBody.querySelectorAll('details').forEach(d => d.open = true);
@@ -279,7 +342,7 @@
     searchResults.innerHTML = '';
     const q = query.toLowerCase().trim();
     if (!q) {
-      searchResults.innerHTML = '<div style="padding: 20px; text-align: center; color: #64748b; font-size: 13px;">Введите поисковый запрос (например: <code>CLAUDE.md</code>, <code>второй мозг</code>, <code>хуки</code>, <code>промпт</code>)...</div>';
+      searchResults.innerHTML = '<div style="padding: 20px; text-align: center; color: #6b6560; font-size: 13px;">Введите поисковый запрос (например: <code>CLAUDE.md</code>, <code>второй мозг</code>, <code>хуки</code>, <code>промпт</code>)...</div>';
       return;
     }
 
@@ -304,7 +367,7 @@
     });
 
     if (matches.length === 0) {
-      searchResults.innerHTML = '<div style="padding: 20px; text-align: center; color: #64748b; font-size: 13px;">Ничего не найдено по запросу.</div>';
+      searchResults.innerHTML = '<div style="padding: 20px; text-align: center; color: #6b6560; font-size: 13px;">Ничего не найдено по запросу.</div>';
       return;
     }
 
